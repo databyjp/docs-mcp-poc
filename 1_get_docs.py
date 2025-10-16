@@ -3,9 +3,11 @@ from crawl4ai import AsyncWebCrawler, CrawlerRunConfig, BFSDeepCrawlStrategy, LX
 import json
 from pathlib import Path
 from typing import Optional
+from utils import CRAWLED_DOCS_DIR
 
-output_dir = Path("./crawled_docs")
-output_dir.mkdir(parents=True, exist_ok=True)
+
+crawled_docs_dir = Path(CRAWLED_DOCS_DIR)
+crawled_docs_dir.mkdir(parents=True, exist_ok=True)
 
 
 async def crawl_docs(name: str, allowed_domains: list[str], start_url: str, url_pattern: Optional[str] = None):
@@ -94,7 +96,7 @@ async def main():
         for result in results:
             results_md[result.url] = result.markdown
 
-        with open(output_dir / f"{job['name']}_crawl4ai.json", "w") as f:
+        with open(crawled_docs_dir / f"{job['name']}_crawl4ai.json", "w") as f:
             json.dump(results_md, f)
 
 

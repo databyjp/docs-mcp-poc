@@ -1,17 +1,14 @@
 import weaviate
-from weaviate.classes.config import Configure, Property, DataType, Tokenization
 from weaviate.util import generate_uuid5
 import json
-from chonkie import NeuralChunker, TokenChunker
+from chonkie import TokenChunker
 import os
 from tqdm import tqdm
+from utils import CRAWLED_DOCS_DIR
+from pathlib import Path
 
 
-# chunker = NeuralChunker(
-#     model="mirth/chonky_modernbert_base_1",  # Default model
-#     device_map="cpu",                        # Device to run the model on ('cpu', 'cuda', etc.)
-#     min_characters_per_chunk=10,             # Minimum characters for a chunk
-# )
+crawled_docs_dir = Path(CRAWLED_DOCS_DIR)
 
 
 chunker = TokenChunker(
@@ -27,36 +24,48 @@ client = weaviate.connect_to_local(
     },
 )
 
-if not client.collections.exists("Chunks"):
-    client.collections.create(
-        name="Chunks",
-        properties=[
-            Property(name="chunk", data_type=DataType.TEXT),
-            Property(name="chunk_no", data_type=DataType.INT),
-            Property(name="path", data_type=DataType.TEXT, tokenization=Tokenization.FIELD),
-        ],
-        vector_config=Configure.Vectors.text2vec_cohere(
-            model="embed-v4.0",
-            source_properties=["chunk", "path"]
-        )
-    )
+crawled_doc_paths = crawled_docs_dir.glob("*.json")
 
 chunks = client.collections.use("Chunks")
+documents = client.collections.use("Documents")
 
-with open("./output/weaviate_docs_crawl4ai.json", "r") as f:
-    data = json.load(f)
+for crawled_doc_path in crawled_doc_paths:
+    vdb_name = crawled_doc_path.stem.split("_")[0]
+    crawled_doc_dict = json.loads(crawled_doc_path.read_text())
+    print(f"Indexing {vdb_name} docs, containing {len(crawled_doc_dict)} pages")
 
-with chunks.batch.fixed_size(batch_size=50) as batch:
-    for path, text in tqdm(data.items()):
-        if "docs.weaviate.io/weaviate" in path:
-            for i, chunk in enumerate(chunker.chunk(text)):
-                batch.add_object(
-                    properties={
-                        "chunk": chunk.text,
-                        "chunk_no": i,
-                        "path": path
-                    },
-                    uuid=generate_uuid5("Chunks", f"{path}-{i}")
-                )
+    print("Indexing chunks...")
+    with chunks.batch.fixed_size(batch_size=50) as batch:
+        for path, text in tqdm(crawled_doc_dict.items()):
+            try:
+                text_chunks = chunker.chunk(text)
+                if len(text_chunks) == 0:
+                    continue
+
+                for i, text_chunk in enumerate(text_chunks):
+                    batch.add_object(
+                        properties={
+                            "product": vdb_name,
+                            "chunk": text_chunk.text,
+                            "chunk_no": i,
+                            "path": path
+                        },
+                        uuid=generate_uuid5("Chunks", f"{vdb_name}-{path}-chunk-{i}")
+                    )
+            except Exception as e:
+                print(f"Error ingesting {path}: {e}")
+
+
+    print("Indexing documents...")
+    with documents.batch.fixed_size(batch_size=50) as batch:
+        for path, text in tqdm(crawled_doc_dict.items()):
+            batch.add_object(
+                properties={
+                    "product": vdb_name,
+                    "body": text,
+                    "path": path
+                },
+                uuid=generate_uuid5("Documents", f"{vdb_name}-{path}")
+            )
 
 client.close()
