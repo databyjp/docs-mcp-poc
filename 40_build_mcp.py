@@ -108,7 +108,7 @@ async def call_tool(name: str, arguments: dict) -> list[TextContent]:
 async def search_chunks(client, arguments: dict) -> list[TextContent]:
     query = arguments["query"]
     product = arguments.get("product")
-    limit = arguments.get("limit", 5)
+    limit = arguments.get("limit", 10)
 
     chunks = client.collections.use("Chunks")
 
@@ -131,7 +131,7 @@ async def search_chunks(client, arguments: dict) -> list[TextContent]:
 async def search_documents(client, arguments: dict) -> list[TextContent]:
     query = arguments["query"]
     product = arguments.get("product")
-    limit = arguments.get("limit", 5)
+    limit = arguments.get("limit", 10)
 
     documents = client.collections.use("Documents")
 
