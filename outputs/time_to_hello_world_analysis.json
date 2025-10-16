@@ -1,0 +1,125 @@
+[
+  {
+    "product": "weaviate",
+    "steps_count": 8,
+    "pages_count": 2,
+    "code_blocks_count": 6,
+    "estimated_time_minutes": 30,
+    "steps_description": [
+      "Create a Weaviate Cloud instance/Sandbox",
+      "Install client library (Python/JavaScript/TypeScript)",
+      "Connect to Weaviate instance with API credentials",
+      "Define a collection with schema and vectorizer configuration",
+      "Batch import objects/documents with data",
+      "Perform semantic search query (nearText)",
+      "Execute hybrid search combining vector and keyword search",
+      "Optional: Implement RAG (Retrieval Augmented Generation) with Generate module"
+    ],
+    "complexity_rating": 2,
+    "prerequisites": [
+      "Weaviate Cloud account",
+      "API key for inference provider (Cohere, OpenAI, or Hugging Face)",
+      "Python 4.9.5+ or JavaScript/TypeScript 3.2.5+ client library installed",
+      "Internet connection to access Weaviate Cloud"
+    ],
+    "notes": "Documentation is well-structured with clear 30-minute time allocation broken into three 10-minute phases (Setup, Populate, Query). Code examples are explicitly stated as self-contained and copy-paste ready, which reduces friction. The quickstart guides (both Cloud and local variants) are optimized for quick onboarding. Visual workflow diagrams showing the three main phases are helpful. Documentation links to Weaviate Academy suggest additional learning resources. The main limitation is that documentation appears incomplete in the provided content (several sections show truncation), so actual code block count may be higher once fully rendered. Clear prerequisite listing for different client libraries is helpful."
+  },
+  {
+    "product": "Pinecone",
+    "steps_count": 8,
+    "pages_count": 4,
+    "code_blocks_count": 5,
+    "estimated_time_minutes": 15,
+    "steps_description": [
+      "Sign up for Pinecone account",
+      "Install SDK (Python, Node.js, or other language)",
+      "Obtain API key from Pinecone console",
+      "Initialize client with API key",
+      "Create an index with specified dimensions and metric",
+      "Generate or prepare vector embeddings",
+      "Insert vectors/documents into index",
+      "Execute query/search on indexed vectors"
+    ],
+    "complexity_rating": 2,
+    "prerequisites": [
+      "Pinecone account (free tier available)",
+      "API key generated from Pinecone console",
+      "Python 3.8+ or Node.js installed",
+      "pip or npm package manager",
+      "Understanding of vector embeddings (basic)"
+    ],
+    "notes": "Documentation structure is clear with multiple quickstart options (Manual, Agentic, Assistant, CLI). The actual code examples and detailed implementation steps are referenced but not fully provided in the navigation pages shown. Main quickstart page content appears truncated. Developer would need to visit the full Manual quickstart page to see complete code blocks. Documentation references 'Install an SDK', 'Get an API key', 'Create an assistant/index', and 'Chat/Query' steps, suggesting straightforward flow. Multiple SDK options (Python, Node.js, Java, Go, .NET, Rust) provide flexibility. CLI alternative available for command-line preference."
+  },
+  {
+    "product": "qdrant",
+    "steps_count": 7,
+    "pages_count": 4,
+    "code_blocks_count": 0,
+    "estimated_time_minutes": 25,
+    "steps_description": [
+      "Sign up for Qdrant Cloud account",
+      "Create a cluster in managed cloud console",
+      "Obtain API key and cluster URL from authentication page",
+      "Install Qdrant SDK/client library for your language",
+      "Connect to cluster using credentials",
+      "Create a collection/index with vector configuration",
+      "Insert vectors/documents into collection",
+      "Execute basic similarity search query"
+    ],
+    "complexity_rating": 3,
+    "prerequisites": [
+      "Qdrant Cloud account (free tier available)",
+      "Internet connection",
+      "API key from cloud dashboard",
+      "Cluster URL endpoint",
+      "Programming language SDK installed (Python/JavaScript/etc)"
+    ],
+    "notes": "Documentation structure is fragmented across multiple pages with navigation links but incomplete content provided. Main quickstart pages (cloud-quickstart, quickstart) did not include actual code examples or detailed steps in the provided content - only navigation menus visible. The actual getting-started tutorial content appears to be gated behind the Netlify security challenge or requires visiting the full pages. Estimated time assumes developer can navigate to obtain credentials and SDK documentation elsewhere. For local setup vs cloud, separate paths exist but neither had complete walkthrough content in the provided documentation snippets. Developer experience is likely better than rating suggests if full pages render, but based on provided content alone, information is sparse."
+  },
+  {
+    "product": "turbopuffer",
+    "steps_count": 6,
+    "pages_count": 2,
+    "code_blocks_count": 3,
+    "estimated_time_minutes": 10,
+    "steps_description": [
+      "Create API key in dashboard",
+      "Install turbopuffer client library (pip install turbopuffer)",
+      "Initialize Turbopuffer client with API key and region",
+      "Create/access a namespace (collection)",
+      "Insert vectors/documents into namespace",
+      "Query/search the namespace with vectors"
+    ],
+    "complexity_rating": 1,
+    "prerequisites": [
+      "API key from turbopuffer dashboard (https://turbopuffer.com/dashboard)",
+      "Python 3.x installed (or TypeScript/Go/Java/Ruby depending on language choice)",
+      "pip or equivalent package manager",
+      "Knowledge of which region to select (https://turbopuffer.com/docs/regions)"
+    ],
+    "notes": "Excellent time-to-hello-world experience. The quickstart page is well-structured with a complete working example. The Python code snippet shows all four requirements (connect, create namespace, insert, query) in minimal steps. Multi-language client support (Python, TypeScript, Go, Java, Ruby, Rust) available. Sample Colab notebook provided for immediate interactive learning. Documentation is clearly organized with API references separated. Only minor friction: developer must visit dashboard separately to create API key and docs to select region, but these are one-time setup tasks."
+  },
+  {
+    "product": "Chroma",
+    "steps_count": 6,
+    "pages_count": 4,
+    "code_blocks_count": 0,
+    "estimated_time_minutes": 15,
+    "steps_description": [
+      "Choose deployment option (Cloud, Ephemeral, Persistent, or Client-Server)",
+      "Install Chroma package or sign up for Chroma Cloud",
+      "Initialize client connection",
+      "Create or get a collection",
+      "Add documents/vectors to collection",
+      "Query the collection"
+    ],
+    "complexity_rating": 2,
+    "prerequisites": [
+      "Python or JavaScript environment",
+      "For Chroma Cloud: Free account signup at trychroma.com",
+      "For self-hosted: pip/npm package manager",
+      "Optional: API keys for embedding models (OpenAI, Cohere, etc.)"
+    ],
+    "notes": "Documentation provides clear navigation structure with distinct sections for different deployment modes. However, the provided documentation excerpts are primarily navigation menus and introductory material without actual code examples. The 'Getting Started' pages appear to exist but full content with code blocks is not included in the provided excerpts. Estimated time assumes developer can find working code examples on the actual documentation pages. The documentation structure suggests 'hello world' is achievable in under 30 seconds per Chroma Cloud marketing claims, but actual working code examples are not visible in provided content. Complexity is low due to serverless nature and minimal configuration required."
+  }
+]

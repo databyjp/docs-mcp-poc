@@ -35,8 +35,8 @@ async def list_tools() -> list[Tool]:
                     },
                     "limit": {
                         "type": "integer",
-                        "description": "Number of chunks to retrieve (default: 5)",
-                        "default": 5
+                        "description": "Number of chunks to retrieve (default: 10)",
+                        "default": 10
                     }
                 },
                 "required": ["query"]
@@ -44,7 +44,7 @@ async def list_tools() -> list[Tool]:
         ),
         Tool(
             name="search_documents",
-            description=f"Search for complete documentation pages across vector databases. Available products: {PRODUCTS_LIST}. Returns full documents that match the query, useful for getting comprehensive information on a topic.",
+            description=f"Search for complete documentation pages across vector databases. Available products: {PRODUCTS_LIST}. Returns the first 500 characters of the documents that match the query. Use the fetch_document tool to get the full content of a specific document.",
             inputSchema={
                 "type": "object",
                 "properties": {
@@ -59,8 +59,8 @@ async def list_tools() -> list[Tool]:
                     },
                     "limit": {
                         "type": "integer",
-                        "description": "Number of documents to retrieve (default: 5)",
-                        "default": 5
+                        "description": "Number of documents to retrieve (default: 10)",
+                        "default": 10
                     }
                 },
                 "required": ["query"]
@@ -144,6 +144,8 @@ async def search_documents(client, arguments: dict) -> list[TextContent]:
     )
 
     results = [o.properties for o in response.objects]
+    for result in results:
+        result["body"] = result["body"][:500] + "..."
 
     return [TextContent(
         type="text",
