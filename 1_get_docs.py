@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 from typing import Optional
 
-output_dir = Path("./output")
+output_dir = Path("./crawled_docs")
 output_dir.mkdir(parents=True, exist_ok=True)
 
 
