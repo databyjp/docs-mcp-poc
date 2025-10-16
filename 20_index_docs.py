@@ -4,11 +4,11 @@ import json
 from chonkie import TokenChunker
 import os
 from tqdm import tqdm
-from utils import CRAWLED_DOCS_DIR
+from utils import PROCESSED_DOCS_DIR
 from pathlib import Path
 
 
-crawled_docs_dir = Path(CRAWLED_DOCS_DIR)
+doc_files_dir = Path(PROCESSED_DOCS_DIR)
 
 
 chunker = TokenChunker(
@@ -24,7 +24,7 @@ client = weaviate.connect_to_local(
     },
 )
 
-crawled_doc_paths = crawled_docs_dir.glob("*.json")
+crawled_doc_paths = doc_files_dir.glob("*.json")
 
 chunks = client.collections.use("Chunks")
 documents = client.collections.use("Documents")
