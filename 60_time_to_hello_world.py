@@ -21,7 +21,7 @@ PRODUCTS = ["weaviate", "pinecone", "qdrant", "turbopuffer", "chroma"]
 vdb_docs_mcp_directory = Path(__file__).parent
 vdb_docs_mcp_server = MCPServerStdio(
     command="uv",
-    args=["--directory", str(vdb_docs_mcp_directory), "run", "python", "40_build_mcp.py"],
+    args=["--directory", str(vdb_docs_mcp_directory), "run", "python", "serve_mcp.py"],
     env=os.environ.copy(),
 )
 

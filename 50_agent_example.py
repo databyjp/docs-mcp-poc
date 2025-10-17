@@ -8,7 +8,7 @@ import os
 vdb_docs_mcp_directory = Path(__file__).parent
 vdb_docs_mcp_server = MCPServerStdio(
     command="uv",
-    args=["--directory", str(vdb_docs_mcp_directory), "run", "python", "40_build_mcp.py"],
+    args=["--directory", str(vdb_docs_mcp_directory), "run", "python", "serve_mcp.py"],
     env=os.environ.copy(),
 )
 
@@ -39,16 +39,23 @@ example_prompts = [
     "How do I connect to a vector database in Python? Show me examples from different databases.",
 
     # Example 2: Product-specific search
-    "I'm using Pinecone. How do I create an index and insert vectors?",
+    "I'm using Weaviate Cloud. How do I create an read-only RBAC role? Show me an end to end code example."
 
     # Example 3: Comparative search
     "Compare how Weaviate and Qdrant handle filtering during vector search.",
 ]
 
 if __name__ == "__main__":
-    for prompt in example_prompts:
-        print(f">> RUNNING PROMPT: {prompt}\n")
-        model_response = basic_agent.run_sync(user_prompt=prompt)
-        print(f"Agent response:")
-        print(model_response.output)
-        print("\n" + "="*80 + "\n")
+    prompt = example_prompts[1]
+    print(f">> RUNNING PROMPT: {prompt}\n")
+    model_response = basic_agent.run_sync(user_prompt=prompt)
+    print(f"Agent response:")
+    print(model_response.output)
+    print("\n" + "="*80 + "\n")
+
+    # for prompt in example_prompts:
+    #     print(f">> RUNNING PROMPT: {prompt}\n")
+    #     model_response = basic_agent.run_sync(user_prompt=prompt)
+    #     print(f"Agent response:")
+    #     print(model_response.output)
+    #     print("\n" + "="*80 + "\n")
