@@ -221,7 +221,13 @@ vdb-docs/
        "url_pattern": "*/docs/*"  # Optional
    }
    ```
-3. Run the pipeline: `00` � `10` � `15` � `20`
+3. Run the pipeline:
+   ```bash
+   uv run python 00_reset_db.py
+   uv run python 10_get_docs.py
+   uv run python 15_supplementary_crawl.py
+   uv run python 20_index_docs.py
+   ```
 
 ### Testing the MCP Server Locally
 
@@ -266,28 +272,6 @@ Required environment variables:
 - `ANTHROPIC_API_KEY` - For Claude models (get one at [anthropic.com](https://anthropic.com))
 
 ## Troubleshooting
-
-### MCP Server Not Appearing in Claude Code
-
-1. **Check the config file path** - Make sure you're editing the correct file for your OS
-2. **Verify absolute paths** - Use full absolute paths, not relative paths or `~`
-3. **Check API keys** - Ensure your environment variables are set correctly
-4. **Restart Claude Code** - Changes only take effect after restart
-5. **Check logs** - Look for MCP-related errors in Claude Code's developer console
-
-### Weaviate Connection Issues
-
-```bash
-# Check if Weaviate is running
-docker ps | grep weaviate
-
-# Restart Weaviate
-docker-compose down
-docker-compose up -d
-
-# Check Weaviate logs
-docker-compose logs weaviate
-```
 
 ### Crawling Issues
 
