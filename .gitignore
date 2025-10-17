@@ -1,6 +1,7 @@
 # Project-specific files
 crawled_docs
 crawled_docs_processed
+temp.py
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

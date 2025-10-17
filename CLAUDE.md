@@ -66,12 +66,22 @@ The project follows a sequential pipeline workflow:
 
 ### MCP Server (serve_mcp.py)
 
-Built with **FastMCP**, using clean decorator-based tool definitions.
+Built with **FastMCP**, using clean decorator-based tool and resource definitions.
 
-Provides three tools for documentation search:
-- `search_chunks` - Semantic search on document chunks (good for specific code examples)
-- `search_documents` - Search full documents (returns first 500 chars + URL)
-- `fetch_document` - Retrieve complete document by URL path
+**General Tools (All Vector Databases):**
+- `search_chunks(query, product?, limit?)` - Semantic search on document chunks across all VDBs
+- `search_documents(query, product?, limit?)` - Search full documents (returns first 500 chars + URL)
+
+**Weaviate-Specific Tools:**
+- `search_weaviate_chunks(query, limit?)` - Convenience function for Weaviate chunk search
+- `search_weaviate_documents(query, limit?)` - Convenience function for Weaviate document search
+
+**Resources (URI-based document fetching):**
+- `vdb-doc://{url}` - Fetch complete documentation by full URL
+  - Example: `vdb-doc://https://docs.weaviate.io/weaviate/manage-data/collections`
+- `weaviate-doc://{path}` - Fetch Weaviate docs by path or full URL
+  - Example: `weaviate-doc://weaviate/manage-data/collections`
+  - Example: `weaviate-doc://https://docs.weaviate.io/weaviate/manage-data/collections`
 
 **Running the MCP server:**
 ```bash
@@ -81,8 +91,9 @@ uv run python serve_mcp.py
 The server uses stdio transport and can be integrated into Claude Desktop or other MCP clients.
 
 **FastMCP Benefits:**
-- Simple `@mcp.tool()` decorators instead of manual schema definitions
+- Simple `@mcp.tool()` and `@mcp.resource()` decorators
 - Automatic type inference from function signatures and docstrings
+- URI-based resources for semantic document access
 - Cleaner, more maintainable code
 
 ### Agent Examples

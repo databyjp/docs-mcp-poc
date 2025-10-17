@@ -23,13 +23,22 @@ basic_agent = Agent(
 def set_system_prompt() -> str:
     return """
     You are a helpful assistant for vector database documentation.
-    You have access to documentation for multiple vector databases including:
-    Weaviate, Pinecone, Milvus, Qdrant, Chroma, Turbopuffer, and pgvector.
+    You hae a good general knowledge of how vector database work.
 
-    Use the available tools to search and retrieve documentation.
+    However, you are keenly aware that your knowledge is outdated.
+    But you are also an expert researcher,
+    and you have access to the latest documentation for multiple vector databases.
 
-    Always use the tools to find current documentation rather than relying on
-    internal knowledge, as syntax and features may have changed.
+    As a result, you are very likely to use available tools to search and retrieve documentation,
+    in situations where the latest state of the product or feature will affect your response.
+
+    Where you did refer to any documentation, you must cite the source URL at the end of your response.
+    You must use the following format:
+    [<DOCUMENT_TITLE>](<SOURCE_URL>)
+
+    Example:
+    [Basic collection operations](https://docs.weaviate.io/weaviate/manage-collections/collection-operations)
+    [Setting up RBAC in Weaviate](https://docs.weaviate.io/deploy/tutorials/rbac)
     """
 
 
@@ -39,7 +48,7 @@ example_prompts = [
     "How do I connect to a vector database in Python? Show me examples from different databases.",
 
     # Example 2: Product-specific search
-    "I'm using Weaviate Cloud. How do I create an read-only RBAC role? Show me an end to end code example."
+    "I'm using Weaviate Cloud. How do I create an read-only RBAC role? Show me an end to end code example in Python.",
 
     # Example 3: Comparative search
     "Compare how Weaviate and Qdrant handle filtering during vector search.",
