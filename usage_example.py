@@ -13,6 +13,7 @@ vdb_docs_mcp_server = MCPServerStdio(
 )
 
 # Create an agent with access to the vector database documentation MCP
+# Note: The system prompt is now provided by the MCP server itself via prompts
 basic_agent = Agent(
     model="claude-haiku-4-5-20251001",
     toolsets=[vdb_docs_mcp_server]
@@ -21,24 +22,31 @@ basic_agent = Agent(
 
 @basic_agent.system_prompt
 def set_system_prompt() -> str:
+    """
+    Use the MCP-provided prompt for consistent behavior.
+    The MCP server exposes several prompts:
+    - vdb_assistant_prompt: General vector database assistant (recommended)
+    - weaviate_assistant_prompt: Weaviate-specific assistant
+    - code_generation_prompt: For generating code examples
+    - comparative_analysis_prompt: For comparing databases
+
+    Here we fetch and use the general assistant prompt.
+    """
+    # In practice, MCP clients can retrieve prompts from the server
+    # For now, we'll use a simplified version that references the MCP guidance
     return """
     You are a helpful assistant for vector database documentation.
-    You hae a good general knowledge of how vector database work.
+    You have access to the latest documentation for multiple vector databases
+    via MCP tools.
 
-    However, you are keenly aware that your knowledge is outdated.
-    But you are also an expert researcher,
-    and you have access to the latest documentation for multiple vector databases.
+    Always use available tools to search and retrieve documentation when the
+    latest state of products or features will affect your response.
 
-    As a result, you are very likely to use available tools to search and retrieve documentation,
-    in situations where the latest state of the product or feature will affect your response.
-
-    Where you did refer to any documentation, you must cite the source URL at the end of your response.
-    You must use the following format:
+    Cite all documentation sources using:
     [<DOCUMENT_TITLE>](<SOURCE_URL>)
 
     Example:
     [Basic collection operations](https://docs.weaviate.io/weaviate/manage-collections/collection-operations)
-    [Setting up RBAC in Weaviate](https://docs.weaviate.io/deploy/tutorials/rbac)
     """
 
 

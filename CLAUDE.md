@@ -83,6 +83,12 @@ Built with **FastMCP**, using clean decorator-based tool and resource definition
   - Example: `weaviate-doc://weaviate/manage-data/collections`
   - Example: `weaviate-doc://https://docs.weaviate.io/weaviate/manage-data/collections`
 
+**Prompts (System Instructions):**
+- `vdb_assistant_prompt` - General vector database assistant with citation guidelines
+- `weaviate_assistant_prompt` - Weaviate-specific assistant with optimized tool usage
+- `code_generation_prompt` - Guidance for generating code examples from documentation
+- `comparative_analysis_prompt` - Instructions for comparing vector databases fairly
+
 **Running the MCP server:**
 ```bash
 uv run python serve_mcp.py
