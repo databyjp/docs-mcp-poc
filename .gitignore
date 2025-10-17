@@ -2,6 +2,7 @@
 crawled_docs
 crawled_docs_processed
 temp.py
+.mcp.json
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

@@ -53,7 +53,7 @@ def set_system_prompt() -> str:
 # Example usage patterns demonstrating different MCP tool capabilities
 example_prompts = [
     # Example 1: Simple search across all vector databases
-    "How do I connect to a vector database in Python? Show me examples from different databases.",
+    "How do I connect to a vector database in Python? Show me examples from two different databases.",
 
     # Example 2: Product-specific search
     "I'm using Weaviate Cloud. How do I create an read-only RBAC role? Show me an end to end code example in Python.",

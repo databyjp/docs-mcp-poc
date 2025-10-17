@@ -178,7 +178,7 @@ Be objective and base all claims on documentation.
 # ============================================================================
 
 
-def search_chunks_generic(query: str, product: Optional[str] = None, limit: int = 10) -> list[dict]:
+def search_chunks_generic(query: str, limit: int, product: Optional[str] = None) -> list[dict]:
     client = get_weaviate_client()
 
     try:
@@ -200,7 +200,7 @@ def search_chunks_generic(query: str, product: Optional[str] = None, limit: int 
 
 
 @mcp.tool()
-def search_chunks(query: str, product: Optional[str] = None, limit: int = 10) -> list[dict]:
+def search_chunks(query: str, product: Optional[str] = None, limit: int = 5) -> list[dict]:
     """Search for relevant text chunks across vector database documentation.
 
     Returns smaller chunks of text that match the query, useful for finding
@@ -210,15 +210,15 @@ def search_chunks(query: str, product: Optional[str] = None, limit: int = 10) ->
         query: The search query or question
         product: Optional filter by specific product. Available: weaviate, turbopuffer,
                 pinecone, milvus, qdrant, chroma, pgvector
-        limit: Number of chunks to retrieve (default: 10)
+        limit: Number of chunks to retrieve (default: 5)
 
     Returns:
         List of matching chunks with product, chunk text, chunk number, and source path
     """
-    return search_chunks_generic(query=query, product=product, limit=limit)
+    return search_chunks_generic(query=query, limit=limit, product=product)
 
 
-def search_documents_generic(query: str, product: Optional[str] = None, limit: int = 10) -> list[dict]:
+def search_documents_generic(query: str, limit: int, product: Optional[str] = None) -> list[dict]:
     client = get_weaviate_client()
     try:
         documents = client.collections.use("Documents")
@@ -237,7 +237,7 @@ def search_documents_generic(query: str, product: Optional[str] = None, limit: i
 
 
 @mcp.tool()
-def search_documents(query: str, product: Optional[str] = None, limit: int = 10) -> list[dict]:
+def search_documents(query: str, limit: int = 5, product: Optional[str] = None) -> list[dict]:
     """Search for complete documentation pages across vector databases.
 
     Returns the first 500 characters of documents that match the query.
@@ -245,14 +245,14 @@ def search_documents(query: str, product: Optional[str] = None, limit: int = 10)
 
     Args:
         query: The search query or question
+        limit: Number of documents to retrieve (default: 5)
         product: Optional filter by specific product. Available: weaviate, turbopuffer,
                 pinecone, milvus, qdrant, chroma, pgvector
-        limit: Number of documents to retrieve (default: 10)
 
     Returns:
         List of matching documents with product, body preview (500 chars), and full path
     """
-    return search_documents_generic(query=query, product=product, limit=limit)
+    return search_documents_generic(query=query, limit=limit, product=product)
 
 
 # ============================================================================
@@ -260,7 +260,7 @@ def search_documents(query: str, product: Optional[str] = None, limit: int = 10)
 # ============================================================================
 
 @mcp.tool()
-def search_weaviate_chunks(query: str, limit: int = 10) -> list[dict]:
+def search_weaviate_chunks(query: str, limit: int = 5) -> list[dict]:
     """Search for relevant text chunks specifically in Weaviate documentation.
 
     Convenience function that searches only Weaviate docs. Returns smaller chunks
@@ -269,16 +269,16 @@ def search_weaviate_chunks(query: str, limit: int = 10) -> list[dict]:
 
     Args:
         query: The search query or question about Weaviate
-        limit: Number of chunks to retrieve (default: 10)
+        limit: Number of chunks to retrieve (default: 5)
 
     Returns:
         List of matching Weaviate chunks with chunk text, chunk number, and source path
     """
-    return search_chunks_generic(query=query, product="weaviate", limit=limit)
+    return search_chunks_generic(query=query, limit=limit, product="weaviate")
 
 
 @mcp.tool()
-def search_weaviate_documents(query: str, limit: int = 10) -> list[dict]:
+def search_weaviate_documents(query: str, limit: int = 5) -> list[dict]:
     """Search for complete documentation pages specifically in Weaviate documentation.
 
     Convenience function that searches only Weaviate docs. Returns the first 500
@@ -287,12 +287,12 @@ def search_weaviate_documents(query: str, limit: int = 10) -> list[dict]:
 
     Args:
         query: The search query or question about Weaviate
-        limit: Number of documents to retrieve (default: 10)
+        limit: Number of documents to retrieve (default: 5)
 
     Returns:
         List of matching Weaviate documents with body preview (500 chars) and full path
     """
-    return search_documents_generic(query=query, product="weaviate", limit=limit)
+    return search_documents_generic(query=query, limit=limit, product="weaviate")
 
 
 # ============================================================================
