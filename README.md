@@ -99,11 +99,12 @@ The MCP settings file location depends on your operating system:
 
 4. **Enable the MCP server**:
    - Add the server name to the `enabledMcpjsonServers` section, e.g. in `.claude/settings.local.json`:
-   ```json
+
+```json
   "enabledMcpjsonServers": [
     "vdb-docs"
   ],
-   ```
+```
 
 5. **Restart Claude Code** for the changes to take effect.
 
