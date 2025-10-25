@@ -1,22 +1,30 @@
 import argparse
+import asyncio
+import os
 from weaviate.classes.query import Filter
 from fastmcp import FastMCP
 from utils import PRODUCTS, connect_to_weaviate
 
 
-# Parse command-line arguments
+# Parse product from environment variable or command-line arguments
 parser = argparse.ArgumentParser(description="MCP server for vector database documentation")
 parser.add_argument(
     "--product",
     type=str,
-    required=True,
+    required=False,
     choices=PRODUCTS,
     help=f"Product documentation to serve. Available: {', '.join(PRODUCTS)}"
 )
 args = parser.parse_args()
 
-# Store product globally
-PRODUCT = args.product
+# Get product from environment variable (for Cloud Run) or CLI argument
+PRODUCT = os.getenv("PRODUCT") or args.product
+
+if not PRODUCT:
+    raise ValueError("PRODUCT must be specified via --product flag or PRODUCT environment variable")
+
+if PRODUCT not in PRODUCTS:
+    raise ValueError(f"Invalid product '{PRODUCT}'. Available: {', '.join(PRODUCTS)}")
 
 # Initialize FastMCP server with product-specific name
 mcp = FastMCP(f"{PRODUCT}-docs")
@@ -173,4 +181,20 @@ rather than making assumptions.
 
 
 if __name__ == "__main__":
-    mcp.run()
+    # Use environment variable to determine transport mode
+    # "stdio" for local development, "streamable-http" for Cloud Run
+    transport = os.getenv("MCP_TRANSPORT", "stdio")
+
+    if transport == "streamable-http":
+        # Cloud Run deployment
+        port = int(os.getenv("PORT", 8080))
+        asyncio.run(
+            mcp.run_async(
+                transport="streamable-http",
+                host="0.0.0.0",
+                port=port,
+            )
+        )
+    else:
+        # Local development (stdio)
+        mcp.run()
