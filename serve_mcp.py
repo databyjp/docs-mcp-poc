@@ -1,28 +1,51 @@
+import argparse
 from weaviate.classes.query import Filter
 from fastmcp import FastMCP
 from utils import PRODUCTS, connect_to_weaviate
-from typing import Optional
 
 
-# Initialize FastMCP server
-mcp = FastMCP("vdb-docs")
+# Parse command-line arguments
+parser = argparse.ArgumentParser(description="MCP server for vector database documentation")
+parser.add_argument(
+    "--product",
+    type=str,
+    required=True,
+    choices=PRODUCTS,
+    help=f"Product documentation to serve. Available: {', '.join(PRODUCTS)}"
+)
+args = parser.parse_args()
 
-# Available products as a formatted string for descriptions
-PRODUCTS_STR = ", ".join(PRODUCTS)
+# Store product globally
+PRODUCT = args.product
+
+# Initialize FastMCP server with product-specific name
+mcp = FastMCP(f"{PRODUCT}-docs")
 
 
 # ============================================================================
-# General Tools (All Vector Databases)
+# Documentation Search Tools
 # ============================================================================
 
 
-def search_chunks_generic(query: str, limit: int, product: Optional[str] = None) -> list[dict]:
+@mcp.tool()
+def search_chunks(query: str, limit: int = 5) -> list[dict]:
+    """Search for relevant text chunks in the documentation.
+
+    Returns smaller chunks of text that match the query, useful for finding
+    specific code examples or explanations.
+
+    Args:
+        query: The search query or question
+        limit: Number of chunks to retrieve (default: 5)
+
+    Returns:
+        List of matching chunks with chunk text, chunk number, and source path
+    """
     client = connect_to_weaviate()
 
     try:
         chunks = client.collections.use("Chunks")
-
-        filter_obj = Filter.by_property("product").equal(product) if product else None
+        filter_obj = Filter.by_property("product").equal(PRODUCT)
 
         response = chunks.query.hybrid(
             query=query,
@@ -38,98 +61,38 @@ def search_chunks_generic(query: str, limit: int, product: Optional[str] = None)
 
 
 @mcp.tool()
-def search_chunks(query: str, product: Optional[str] = None, limit: int = 5) -> list[dict]:
-    f"""Search for relevant text chunks across vector database documentation.
+def search_documents(query: str, limit: int = 5) -> list[dict]:
+    """Search for complete documentation pages.
 
-    Returns smaller chunks of text that match the query, useful for finding
-    specific code examples or explanations.
+    Returns the first 500 characters of documents that match the query.
+    Use the doc:// resource URI to get the full content of a specific document.
 
     Args:
         query: The search query or question
-        product: Optional filter by specific product. Available: {PRODUCTS}
-        limit: Number of chunks to retrieve (default: 5)
+        limit: Number of documents to retrieve (default: 5)
 
     Returns:
-        List of matching chunks with product, chunk text, chunk number, and source path
+        List of matching documents with body preview (500 chars) and full path
     """
-    return search_chunks_generic(query=query, limit=limit, product=product)
-
-
-def search_documents_generic(query: str, limit: int, product: Optional[str] = None) -> list[dict]:
     client = connect_to_weaviate()
+
     try:
         documents = client.collections.use("Documents")
-        filter_obj = Filter.by_property("product").equal(product) if product else None
+        filter_obj = Filter.by_property("product").equal(PRODUCT)
+
         response = documents.query.hybrid(
             query=query,
             limit=limit,
             filters=filter_obj
         )
+
         results = [o.properties for o in response.objects]
         for result in results:
             result["body"] = result["body"][:500] + "..."
         return results
+
     finally:
         client.close()
-
-
-@mcp.tool()
-def search_documents(query: str, limit: int = 5, product: Optional[str] = None) -> list[dict]:
-    """Search for complete documentation pages across vector databases.
-
-    Returns the first 500 characters of documents that match the query.
-    Use the vdb-doc:// resource URI to get the full content of a specific document.
-
-    Args:
-        query: The search query or question
-        limit: Number of documents to retrieve (default: 5)
-        product: Optional filter by specific product. Available: weaviate, turbopuffer,
-                pinecone, milvus, qdrant, chroma, pgvector
-
-    Returns:
-        List of matching documents with product, body preview (500 chars), and full path
-    """
-    return search_documents_generic(query=query, limit=limit, product=product)
-
-
-# ============================================================================
-# Weaviate-Specific Tools
-# ============================================================================
-
-@mcp.tool()
-def search_weaviate_chunks(query: str, limit: int = 5) -> list[dict]:
-    """Search for relevant text chunks specifically in Weaviate documentation.
-
-    Convenience function that searches only Weaviate docs. Returns smaller chunks
-    of text that match the query, useful for finding specific code examples or
-    explanations about Weaviate.
-
-    Args:
-        query: The search query or question about Weaviate
-        limit: Number of chunks to retrieve (default: 5)
-
-    Returns:
-        List of matching Weaviate chunks with chunk text, chunk number, and source path
-    """
-    return search_chunks_generic(query=query, limit=limit, product="weaviate")
-
-
-@mcp.tool()
-def search_weaviate_documents(query: str, limit: int = 5) -> list[dict]:
-    """Search for complete documentation pages specifically in Weaviate documentation.
-
-    Convenience function that searches only Weaviate docs. Returns the first 500
-    characters of documents that match the query. Use the vdb-doc:// resource URI
-    to get the full content of a specific document.
-
-    Args:
-        query: The search query or question about Weaviate
-        limit: Number of documents to retrieve (default: 5)
-
-    Returns:
-        List of matching Weaviate documents with body preview (500 chars) and full path
-    """
-    return search_documents_generic(query=query, limit=limit, product="weaviate")
 
 
 # ============================================================================
@@ -137,7 +100,8 @@ def search_weaviate_documents(query: str, limit: int = 5) -> list[dict]:
 # ============================================================================
 
 
-def fetch_document_resource_generic(url: str) -> str:
+def fetch_document_by_url(url: str) -> str:
+    """Helper function to fetch a document by its full URL."""
     client = connect_to_weaviate()
 
     try:
@@ -158,15 +122,15 @@ def fetch_document_resource_generic(url: str) -> str:
         client.close()
 
 
-@mcp.resource("vdb-doc://{url}")
+@mcp.resource("doc://{url}")
 def fetch_document_resource(url: str) -> str:
     """Fetch a complete documentation page by its URL.
 
     This resource provides access to full documentation content using a URI scheme.
     The URL should be the complete documentation URL from a search result.
 
-    URI Format: vdb-doc://{full_url}
-    Example: vdb-doc://https://docs.weaviate.io/weaviate/manage-data/collections
+    URI Format: doc://{full_url}
+    Example: doc://https://docs.weaviate.io/weaviate/manage-data/collections
 
     Args:
         url: The complete URL of the documentation page
@@ -174,32 +138,7 @@ def fetch_document_resource(url: str) -> str:
     Returns:
         Full markdown content of the documentation page
     """
-    return fetch_document_resource_generic(url=url)
-
-
-@mcp.resource("weaviate-doc://{path}")
-def fetch_weaviate_document_resource(path: str) -> str:
-    """Fetch a complete Weaviate documentation page by its path.
-
-    Convenience resource for accessing Weaviate documentation. You can provide
-    either the full URL or just the path portion.
-
-    URI Format: weaviate-doc://{path_or_full_url}
-    Examples:
-        - weaviate-doc://https://docs.weaviate.io/weaviate/manage-data/collections
-        - weaviate-doc://weaviate/manage-data/collections
-
-    Args:
-        path: The URL path or full URL of the Weaviate documentation page
-
-    Returns:
-        Full markdown content of the Weaviate documentation page
-    """
-    # Handle both full URLs and partial paths
-    if not path.startswith("http"):
-        path = f"https://docs.weaviate.io/{path}"
-
-    return fetch_document_resource_generic(url=path)
+    return fetch_document_by_url(url=url)
 
 
 if __name__ == "__main__":
