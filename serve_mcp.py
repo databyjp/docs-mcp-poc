@@ -4,6 +4,7 @@ import os
 from weaviate.classes.query import Filter
 from fastmcp import FastMCP
 from utils import PRODUCTS, connect_to_weaviate
+from logging_utils import log_tool_call, log_resource_access, log_server_start, log_server_ready
 
 
 # Parse product from environment variable or command-line arguments
@@ -36,6 +37,7 @@ mcp = FastMCP(f"{PRODUCT}-docs")
 
 
 @mcp.tool()
+@log_tool_call
 def search_chunks(query: str, limit: int = 5) -> list[dict]:
     """Search for relevant text chunks in the documentation.
 
@@ -69,6 +71,7 @@ def search_chunks(query: str, limit: int = 5) -> list[dict]:
 
 
 @mcp.tool()
+@log_tool_call
 def search_documents(query: str, limit: int = 5) -> list[dict]:
     """Search for complete documentation pages.
 
@@ -108,6 +111,7 @@ def search_documents(query: str, limit: int = 5) -> list[dict]:
 # ============================================================================
 
 
+@log_resource_access
 def fetch_document_by_url(url: str) -> str:
     """Helper function to fetch a document by its full URL."""
     client = connect_to_weaviate()
@@ -185,9 +189,13 @@ if __name__ == "__main__":
     # "stdio" for local development, "streamable-http" for Cloud Run
     transport = os.getenv("MCP_TRANSPORT", "stdio")
 
+    # Log server start
+    log_server_start(product=PRODUCT, transport=transport)
+
     if transport == "streamable-http":
         # Cloud Run deployment
         port = int(os.getenv("PORT", 8080))
+        log_server_ready(product=PRODUCT, transport=transport, port=port)
         asyncio.run(
             mcp.run_async(
                 transport="streamable-http",
@@ -197,4 +205,5 @@ if __name__ == "__main__":
         )
     else:
         # Local development (stdio)
+        log_server_ready(product=PRODUCT, transport=transport)
         mcp.run()
