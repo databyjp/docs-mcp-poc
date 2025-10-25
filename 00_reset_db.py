@@ -1,7 +1,8 @@
-import weaviate
 from weaviate.classes.config import Configure, Property, DataType, Tokenization
+from utils import connect_to_weaviate
 
-client = weaviate.connect_to_local()
+
+client = connect_to_weaviate()
 
 for collection_name in ["Chunks", "Documents"]:
     client.collections.delete(collection_name)

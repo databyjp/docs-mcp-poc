@@ -4,11 +4,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a vector database documentation crawler and analyzer that:
-1. Crawls documentation from multiple vector database providers (Weaviate, Pinecone, Qdrant, Milvus, Chroma, Turbopuffer, pgvector)
-2. Processes and indexes the documentation into Weaviate using semantic chunking
+This is a vector database documentation crawler and analyzer for:
+1. Crawls documentation sites
+2. Processes (chunks) and indexes the documentation into Weaviate
 3. Provides an MCP (Model Context Protocol) server for searching documentation
-4. Analyzes "time to hello world" metrics across different vector databases
 
 ## Environment Setup
 
@@ -24,13 +23,11 @@ Managed with `uv` (Python package manager):
 - `mcp` - Model Context Protocol server
 - `pydantic-ai` - AI agent framework
 
-### Starting Services
-```bash
-# Start local Weaviate instance
-docker-compose up -d
+### Requirements
+A Weaviate instance must be running on the cloud; with its credentials set in `.env` or environment variables.
 
-# Verify Weaviate is running on http://localhost:8080
-```
+WCD_URL=<your-url>.weaviate.cloud
+WCD_KEY=<your-weaviate-api-key>
 
 ## Core Architecture
 
@@ -58,11 +55,6 @@ The project follows a sequential pipeline workflow:
    - Chunks documents using `TokenChunker` (512 tokens, 128 overlap)
    - Batch inserts chunks and full documents
    - Uses deterministic UUIDs for idempotency
-
-5. **30_inspect_db.py** - Interactive inspection utilities
-   - Helper functions: `search_chunks()`, `search_documents()`, `fetch_document()`
-   - Examples of hybrid search and document retrieval
-   - Useful for testing queries
 
 ### MCP Server (serve_mcp.py)
 

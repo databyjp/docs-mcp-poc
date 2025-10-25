@@ -30,7 +30,6 @@ def is_problematic_content(content: str) -> bool:
         "Enable JavaScript and cookies to continue",
         "Please enable cookies",
         "Checking your browser",
-        "Access denied",
         "403 Forbidden",
         "404 Not Found",
         "500 Internal Server Error",

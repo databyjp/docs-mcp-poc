@@ -1,25 +1,17 @@
-import os
-import weaviate
 from weaviate.classes.generate import GenerativeConfig
 from weaviate.classes.query import Filter
 from typing import Optional
-from utils import PRODUCTS
+from utils import PRODUCTS, connect_to_weaviate
 
 
-client = weaviate.connect_to_local(
-    headers={
-        "X-Cohere-Api-Key": os.getenv("COHERE_API_KEY"),
-        "X-Anthropic-Api-Key": os.getenv("ANTHROPIC_API_KEY"),
-    },
-)
+client = connect_to_weaviate()
 
 chunks = client.collections.use("Chunks")
 documents = client.collections.use("Documents")
 
 
 rag_config = GenerativeConfig.anthropic(
-    # model="claude-haiku-4-5-20251001",
-    model="claude-3-5-haiku-latest",
+    model="claude-haiku-4-5-20251001",
 )
 
 
@@ -79,7 +71,7 @@ def fetch_document(path: str) -> dict:
 
 
 for tmp_path in [
-    "https://docs.pinecone.io/guides/get-started/overview",
+    # "https://docs.pinecone.io/guides/get-started/overview",
     "https://docs.weaviate.io/weaviate/manage-data/collections"
 ]:
     doc = fetch_document(tmp_path)

@@ -1,28 +1,23 @@
-import weaviate
 from weaviate.util import generate_uuid5
 import json
 from chonkie import TokenChunker
-import os
 from tqdm import tqdm
 from utils import PROCESSED_DOCS_DIR
 from pathlib import Path
+from utils import connect_to_weaviate
 
+
+client = connect_to_weaviate()
 
 doc_files_dir = Path(PROCESSED_DOCS_DIR)
 
 
 chunker = TokenChunker(
     tokenizer="word", # Default tokenizer (or use "gpt2", etc.)
-    chunk_size=512, # Maximum tokens per chunk
-    chunk_overlap=128 # Overlap between chunks
+    chunk_size=256, # Maximum tokens per chunk
+    chunk_overlap=32 # Overlap between chunks
 )
 
-
-client = weaviate.connect_to_local(
-    headers={
-        "X-Cohere-Api-Key": os.getenv("COHERE_API_KEY")
-    },
-)
 
 crawled_doc_paths = doc_files_dir.glob("*.json")
 

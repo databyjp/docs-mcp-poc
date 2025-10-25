@@ -1,8 +1,6 @@
-import os
-import weaviate
 from weaviate.classes.query import Filter
 from fastmcp import FastMCP
-from utils import PRODUCTS
+from utils import PRODUCTS, connect_to_weaviate
 from typing import Optional
 
 
@@ -11,16 +9,6 @@ mcp = FastMCP("vdb-docs")
 
 # Available products as a formatted string for descriptions
 PRODUCTS_LIST = ", ".join(PRODUCTS)
-
-
-def get_weaviate_client():
-    """Create and return a Weaviate client with API keys."""
-    return weaviate.connect_to_local(
-        headers={
-            "X-Cohere-Api-Key": os.getenv("COHERE_API_KEY"),
-            "X-Anthropic-Api-Key": os.getenv("ANTHROPIC_API_KEY"),
-        },
-    )
 
 
 # ============================================================================
@@ -179,7 +167,7 @@ Be objective and base all claims on documentation.
 
 
 def search_chunks_generic(query: str, limit: int, product: Optional[str] = None) -> list[dict]:
-    client = get_weaviate_client()
+    client = connect_to_weaviate()
 
     try:
         chunks = client.collections.use("Chunks")
@@ -219,7 +207,7 @@ def search_chunks(query: str, product: Optional[str] = None, limit: int = 5) -> 
 
 
 def search_documents_generic(query: str, limit: int, product: Optional[str] = None) -> list[dict]:
-    client = get_weaviate_client()
+    client = connect_to_weaviate()
     try:
         documents = client.collections.use("Documents")
         filter_obj = Filter.by_property("product").equal(product) if product else None
@@ -301,7 +289,7 @@ def search_weaviate_documents(query: str, limit: int = 5) -> list[dict]:
 
 
 def fetch_document_resource_generic(url: str) -> str:
-    client = get_weaviate_client()
+    client = connect_to_weaviate()
 
     try:
         documents = client.collections.use("Documents")

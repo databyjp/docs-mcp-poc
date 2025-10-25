@@ -1,16 +1,26 @@
 import asyncio
 from crawl4ai import AsyncWebCrawler, CrawlerRunConfig, BFSDeepCrawlStrategy, LXMLWebScrapingStrategy, URLPatternFilter, DomainFilter, FilterChain, CacheMode
+from crawl4ai.models import CrawlResultContainer, CrawlResult
 import json
 from pathlib import Path
 from typing import Optional
-from utils import CRAWLED_DOCS_DIR
+from datetime import datetime, timedelta
+from utils import CRAWLED_DOCS_DIR, CRAWL_JOBS
 
 
 crawled_docs_dir = Path(CRAWLED_DOCS_DIR)
 crawled_docs_dir.mkdir(parents=True, exist_ok=True)
 
 
-async def crawl_docs(name: str, allowed_domains: list[str], start_url: str, url_pattern: Optional[str] = None):
+async def crawl_docs(name: str, allowed_domains: list[str], start_url: str, url_pattern: Optional[str] = None) -> CrawlResultContainer[CrawlResult]:
+    """
+    Crawl a documentation site and fetch markdown content.
+    Args:
+        name (str): Name of the crawl job.
+        allowed_domains (list[str]): List of allowed domains for crawling.
+        start_url (str): The starting URL for the crawler.
+        url_pattern (Optional[str]): Optional URL pattern to filter URLs.
+    """
     print(f"Crawling {name}...")
 
     # Create a filter chain for the crawler
@@ -44,59 +54,25 @@ async def crawl_docs(name: str, allowed_domains: list[str], start_url: str, url_
 
 
 async def main():
+    for job in CRAWL_JOBS:
+        output_path = crawled_docs_dir / f"{job['name']}_crawl4ai.json"
+        skip_crawl = False
+        if output_path.exists():
+            # Check the file's last modified date to decide whether to skip crawling
+            last_modified = output_path.stat().st_mtime
+            if datetime.now() - datetime.fromtimestamp(last_modified) < timedelta(days=7):
+                print(f"Skipping crawl for {job['name']} as the data is recent.")
+                skip_crawl = True
 
-    jobs = [
-        {
-            "name": "weaviate_docs",
-            "allowed_domains": ["docs.weaviate.io"],
-            "start_url": "https://docs.weaviate.io/weaviate",
-            "url_pattern": None
-        },
-        {
-            "name": "turbopuffer_docs",
-            "allowed_domains": ["turbopuffer.com"],
-            "start_url": "https://turbopuffer.com/docs",
-            "url_pattern": "*/docs/*"
-        },
-        {
-            "name": "pinecone_docs",
-            "allowed_domains": ["docs.pinecone.io"],
-            "start_url": "https://docs.pinecone.io/guides/get-started/overview",
-            "url_pattern": None
-        },
-        {
-            "name": "milvus_docs",
-            "allowed_domains": ["milvus.io"],
-            "start_url": "https://milvus.io/docs",
-            "url_pattern": ["*/docs/*", "*/api-reference/pymilvus/*"]
-        },
-        {
-            "name": "qdrant_docs",
-            "allowed_domains": ["qdrant.tech"],
-            "start_url": "https://qdrant.tech/documentation/",
-            "url_pattern": ["*/documentation/*"]
-        },
-        {
-            "name": "chroma_docs",
-            "allowed_domains": ["docs.trychroma.com"],
-            "start_url": "https://docs.trychroma.com/docs/overview/introduction",
-            "url_pattern": None
-        },
-        {
-            "name": "pgvector_docs",
-            "allowed_domains": ["raw.githubusercontent.com"],
-            "start_url": "https://raw.githubusercontent.com/pgvector/pgvector/refs/heads/master/README.md",
-            "url_pattern": ["pgvector/pgvector/refs/heads/master/README.md"]
-        }
-    ]
+        if skip_crawl:
+            continue
 
-    for job in jobs:
         results = await crawl_docs(**job)
         results_md = {}
         for result in results:
             results_md[result.url] = result.markdown
 
-        with open(crawled_docs_dir / f"{job['name']}_crawl4ai.json", "w") as f:
+        with open(output_path, "w") as f:
             json.dump(results_md, f)
 
 
