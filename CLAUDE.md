@@ -58,53 +58,44 @@ The project follows a sequential pipeline workflow:
 
 ### MCP Server (serve_mcp.py)
 
-Built with **FastMCP**, using clean decorator-based tool and resource definitions.
+Built with **FastMCP**, using clean decorator-based tool and resource definitions. The server is **product-specific** - it serves documentation for one product at a time, specified via CLI argument.
 
-**General Tools (All Vector Databases):**
-- `search_chunks(query, product?, limit?)` - Semantic search on document chunks across all VDBs
-- `search_documents(query, product?, limit?)` - Search full documents (returns first 500 chars + URL)
+**Architecture:**
+- Single-product design: Each server instance serves one product's documentation
+- Product specified at runtime via `--product` flag
+- Server name becomes `{product}-docs` (e.g., "weaviate-docs", "togetherai-docs")
+- To serve multiple products, run multiple server instances
 
-**Weaviate-Specific Tools:**
-- `search_weaviate_chunks(query, limit?)` - Convenience function for Weaviate chunk search
-- `search_weaviate_documents(query, limit?)` - Convenience function for Weaviate document search
+**Tools:**
+- `search_chunks(query, limit?)` - Semantic search on document chunks for the specified product
+- `search_documents(query, limit?)` - Search full documents (returns first 500 chars + URL)
 
 **Resources (URI-based document fetching):**
-- `vdb-doc://{url}` - Fetch complete documentation by full URL
-  - Example: `vdb-doc://https://docs.weaviate.io/weaviate/manage-data/collections`
-- `weaviate-doc://{path}` - Fetch Weaviate docs by path or full URL
-  - Example: `weaviate-doc://weaviate/manage-data/collections`
-  - Example: `weaviate-doc://https://docs.weaviate.io/weaviate/manage-data/collections`
+- `doc://{url}` - Fetch complete documentation by full URL
+  - Example: `doc://https://docs.weaviate.io/weaviate/manage-data/collections`
 
-**Prompts (System Instructions):**
-- `vdb_assistant_prompt` - General vector database assistant with citation guidelines
-- `weaviate_assistant_prompt` - Weaviate-specific assistant with optimized tool usage
-- `code_generation_prompt` - Guidance for generating code examples from documentation
-- `comparative_analysis_prompt` - Instructions for comparing vector databases fairly
+**Prompts:**
+- `assistant_instructions` - Product-specific documentation assistant with citation guidelines, search strategy, and code example handling
 
 **Running the MCP server:**
 ```bash
-uv run python serve_mcp.py
+# Serve Weaviate documentation
+uv run python serve_mcp.py --product weaviate
+
+# Serve TogetherAI documentation
+uv run python serve_mcp.py --product togetherai
+
+# Available products determined by CRAWL_JOBS in utils.py
 ```
 
-The server uses stdio transport and can be integrated into Claude Desktop or other MCP clients.
+The server uses stdio transport and can be integrated into Claude Desktop or other MCP clients. Multiple servers can run simultaneously for different products.
 
 **FastMCP Benefits:**
-- Simple `@mcp.tool()` and `@mcp.resource()` decorators
+- Simple `@mcp.tool()`, `@mcp.resource()`, and `@mcp.prompt()` decorators
 - Automatic type inference from function signatures and docstrings
 - URI-based resources for semantic document access
+- Skills-like prompts that load on-demand for token efficiency
 - Cleaner, more maintainable code
-
-### Agent Examples
-
-**50_agent_example.py** - Basic agent using the MCP server
-- Demonstrates `pydantic-ai` agent with MCP toolset
-- Shows different query patterns (simple, product-specific, comparative)
-
-**60_time_to_hello_world.py** - Documentation analysis agent
-- Analyzes onboarding complexity across vector databases
-- Measures steps, pages, time, and complexity to get a basic example working
-- Generates JSON analysis, code snippets, and markdown report
-- Outputs to `outputs/` directory
 
 ## Key Concepts
 
@@ -132,44 +123,24 @@ Uses **hybrid search** (combines semantic + keyword):
 
 - `CRAWLED_DOCS_DIR` = "./crawled_docs"
 - `PROCESSED_DOCS_DIR` = "./crawled_docs_processed"
-- `PRODUCTS` = List of supported vector databases
+- `CRAWL_JOBS` = List of crawl configurations (name, domains, start URL, patterns)
+- `PRODUCTS` = Derived from `CRAWL_JOBS`, used for MCP server product selection
 
 ## Development Workflow
 
-### Adding a New Vector Database
+### Adding a New Product Documentation
 
-1. Add product name to `PRODUCTS` list in `utils.py`
-2. Add crawl job config to `10_get_docs.py`:
+1. Add crawl job config to `CRAWL_JOBS` in `utils.py`:
    ```python
    {
-       "name": "product_docs",
+       "name": "product_name",
        "allowed_domains": ["docs.example.com"],
        "start_url": "https://docs.example.com/start",
        "url_pattern": "*/docs/*"  # Optional
    }
    ```
-3. Run the full pipeline: `00` → `10` → `15` → `20`
-
-### Running Analysis
-
-```bash
-# Run time-to-hello-world analysis
-uv run python 60_time_to_hello_world.py
-
-# Check outputs
-ls outputs/
-ls outputs/code_snippets/
-```
-
-### Testing MCP Tools
-
-```bash
-# Start MCP server in one terminal
-uv run python serve_mcp.py
-
-# Or use the agent example
-uv run python 50_agent_example.py
-```
+2. Run the full pipeline: `00` → `10` → `15` → `20`
+3. Start MCP server: `uv run python serve_mcp.py --product product_name`
 
 ## Common Commands
 
@@ -180,24 +151,17 @@ uv run python 10_get_docs.py
 uv run python 15_supplementary_crawl.py
 uv run python 20_index_docs.py
 
-# Run analysis
-uv run python 60_time_to_hello_world.py
-
-# Start MCP server for external clients
-uv run python serve_mcp.py
-
-# Run basic agent examples
-uv run python 50_agent_example.py
-
-# Inspect database contents
-uv run python 30_inspect_db.py
+# Start MCP server (requires --product flag)
+uv run python serve_mcp.py --product weaviate
+uv run python serve_mcp.py --product togetherai
 ```
 
 ## Important Notes
 
 - The project uses `uv` for dependency management (see `pyproject.toml` and `uv.lock`)
-- Weaviate must be running locally before executing index/search operations
+- Weaviate must be running on the cloud (WCD_URL and WCD_KEY in `.env`)
 - Crawling is cached by `crawl4ai` - use `CacheMode.BYPASS` to force refresh
 - UUID generation uses `generate_uuid5()` for deterministic IDs, enabling re-indexing without duplicates
 - The MCP server connects via stdio, making it suitable for Claude Desktop integration
-- Analysis agents use `claude-haiku-4-5-20251001` for cost-effective documentation analysis
+- MCP server is product-specific: use `--product` flag to specify which documentation to serve
+- To serve multiple products simultaneously, run multiple server instances

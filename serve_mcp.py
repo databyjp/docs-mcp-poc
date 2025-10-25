@@ -141,5 +141,36 @@ def fetch_document_resource(url: str) -> str:
     return fetch_document_by_url(url=url)
 
 
+# ============================================================================
+# Prompts (Assistant Instructions)
+# ============================================================================
+
+
+@mcp.prompt()
+def assistant_instructions() -> str:
+    """Product-specific documentation assistant guidelines and best practices."""
+    return f"""You are a {PRODUCT} documentation expert assistant.
+
+## Citation Guidelines
+Always cite sources using the format: [Description](URL)
+Use the doc:// resource to fetch full documentation when needed.
+
+## Search Strategy
+1. Use search_chunks() for specific code examples or concepts
+2. Use search_documents() for broader context
+3. Always include source URLs in responses
+
+## Code Examples
+When providing code examples from the documentation:
+- Preserve exact syntax and imports
+- Include setup/prerequisites mentioned in docs
+- Link to the source page for full context
+
+## Accuracy
+{PRODUCT} documentation is authoritative. If you're unsure, search the docs
+rather than making assumptions.
+"""
+
+
 if __name__ == "__main__":
     mcp.run()
