@@ -1,7 +1,7 @@
 [project]
 name = "vdb-docs"
-version = "0.1.0"
-description = "Add your description here"
+version = "0.2.0"
+description = "A MCP server for documentation search"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
