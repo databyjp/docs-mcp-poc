@@ -304,33 +304,6 @@ Cost-saving tips:
 
 ## Security Considerations
 
-### Authentication (Optional)
-
-To require authentication:
-
-```bash
-# Deploy with authentication required
-gcloud run deploy weaviate-docs-mcp \
-    --image ${IMAGE} \
-    --no-allow-unauthenticated \
-    # ... other flags
-```
-
-Then configure Claude Desktop with an auth token:
-```json
-{
-  "mcpServers": {
-    "weaviate-docs": {
-      "url": "https://weaviate-docs-mcp-XXXXX-uc.a.run.app/sse",
-      "transport": "http-sse",
-      "headers": {
-        "Authorization": "Bearer YOUR_TOKEN_HERE"
-      }
-    }
-  }
-}
-```
-
 ### Secret Management
 
 For production, use Google Secret Manager instead of environment variables:
@@ -348,33 +321,6 @@ gcloud run deploy weaviate-docs-mcp \
     # ... other flags
 ```
 
-## Troubleshooting
-
-### Container Fails to Start
-
-Check logs for startup errors:
-```bash
-gcloud run services logs read weaviate-docs-mcp --region us-central1 --limit 50
-```
-
-Common issues:
-- Missing environment variables (check `PRODUCT`, `WCD_URL`, `WCD_KEY`, `COHERE_API_KEY`)
-- Weaviate connection failures (verify WCD credentials)
-- Port binding issues (ensure `PORT=8080` is set)
-
-### Claude Desktop Connection Issues
-
-1. Verify service URL includes `/sse` endpoint
-2. Check service is publicly accessible (`--allow-unauthenticated`)
-3. Test endpoint manually: `curl -N https://your-service-url/sse`
-4. Restart Claude Desktop after config changes
-
-### Performance Issues
-
-- Increase memory: `--memory 1Gi`
-- Increase CPU: `--cpu 2`
-- Set minimum instances: `--min-instances 1` (reduces cold starts)
-
 ## Cleanup
 
 To delete services and save costs:
@@ -388,14 +334,6 @@ gcloud run services list --region us-central1 --format='value(metadata.name)' | 
     grep 'docs-mcp' | \
     xargs -I {} gcloud run services delete {} --region us-central1 --quiet
 ```
-
-## Next Steps
-
-- Set up CI/CD with GitHub Actions for automated deployments
-- Configure custom domains for your services
-- Implement request rate limiting
-- Add monitoring and alerting with Cloud Monitoring
-- Use Cloud CDN for caching and global distribution
 
 ## Additional Resources
 
