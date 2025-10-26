@@ -4,6 +4,8 @@ crawled_docs_processed
 temp.py
 reference_materials
 .mcp.json
+# For GCP deployment
+.env.production
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
