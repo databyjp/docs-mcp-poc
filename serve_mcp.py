@@ -30,6 +30,12 @@ if PRODUCT not in PRODUCTS:
 # Initialize FastMCP server with product-specific name
 mcp = FastMCP(f"{PRODUCT}-docs")
 
+# Set product in logging context for Cloud Logging labels
+import logging
+logging.getLogger("mcp_server").addFilter(
+    lambda record: setattr(record, 'product', PRODUCT) or True
+)
+
 
 # ============================================================================
 # Documentation Search Tools

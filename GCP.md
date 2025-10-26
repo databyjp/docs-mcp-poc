@@ -13,7 +13,7 @@ This guide walks you through deploying your documentation MCP server to Google C
 
 - **Local Mode**: Server runs with `stdio` transport for local Claude Desktop integration
 - **Cloud Run Mode**: Server runs with `streamable-http` transport on port 8080, accessible via HTTPS
-- **Product-Specific**: Each product (weaviate, togetherai, etc.) requires its own Cloud Run service instance
+- **Product-Specific**: Each product (weaviate, etc.) requires its own Cloud Run service instance
 
 ## Setup Instructions
 
@@ -76,7 +76,7 @@ Deploy a product-specific MCP server (e.g., for Weaviate documentation):
 # Set variables
 PROJECT_ID="YOUR-PROJECT-ID"
 REGION="us-central1"
-PRODUCT="weaviate"  # or "togetherai", etc.
+PRODUCT="weaviate"  # etc.
 SERVICE_NAME="${PRODUCT}-docs-mcp"
 
 # Build the container image
@@ -114,10 +114,10 @@ https://weaviate-docs-mcp-XXXXX-uc.a.run.app
 
 ### 5. Deploy Additional Products
 
-To serve multiple products (e.g., togetherai), repeat the build/deploy with a different `PRODUCT` value:
+To serve multiple products repeat the build/deploy with a different `PRODUCT` value:
 
 ```bash
-PRODUCT="togetherai"
+PRODUCT="<other_product>"
 SERVICE_NAME="${PRODUCT}-docs-mcp"
 
 # Build, push, and deploy using the same commands as above
@@ -153,10 +153,6 @@ Update your Claude Desktop configuration to use the remote MCP server:
   "mcpServers": {
     "weaviate-docs": {
       "url": "https://weaviate-docs-mcp-XXXXX-uc.a.run.app/mcp",
-      "transport": "http"
-    },
-    "togetherai-docs": {
-      "url": "https://togetherai-docs-mcp-XXXXX-uc.a.run.app/mcp",
       "transport": "http"
     }
   }
@@ -201,7 +197,7 @@ PRODUCT="${1:-weaviate}"
 
 if [ -z "$1" ]; then
     echo "Usage: ./deploy.sh <product>"
-    echo "Available products: weaviate, togetherai"
+    echo "Available products: weaviate, etc"
     exit 1
 fi
 
@@ -244,7 +240,6 @@ chmod +x deploy.sh
 Usage:
 ```bash
 ./deploy.sh weaviate
-./deploy.sh togetherai
 ```
 
 ## Monitoring and Debugging

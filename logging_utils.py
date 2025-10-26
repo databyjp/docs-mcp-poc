@@ -20,6 +20,10 @@ class JSONFormatter(logging.Formatter):
             "message": record.getMessage(),
         }
 
+        # Add product if present (set by logging filter)
+        if hasattr(record, "product"):
+            log_data["product"] = record.product
+
         # Add extra fields if present
         if hasattr(record, "extra_fields"):
             log_data.update(record.extra_fields)
@@ -55,6 +59,10 @@ def log_tool_call(func: Callable) -> Callable:
         tool_name = func.__name__
         start_time = time.time()
 
+        # Extract query parameter if present
+        query = kwargs.get("query") or (args[0] if args else None)
+        limit = kwargs.get("limit") or (args[1] if len(args) > 1 else None)
+
         try:
             result = func(*args, **kwargs)
             duration_ms = (time.time() - start_time) * 1000
@@ -62,18 +70,25 @@ def log_tool_call(func: Callable) -> Callable:
             # Calculate result size
             result_count = len(result) if isinstance(result, list) else 1
 
+            # Build log data
+            log_data = {
+                "event_type": "tool_call",
+                "tool_name": tool_name,
+                "duration_ms": round(duration_ms, 2),
+                "result_count": result_count,
+                "status": "success",
+            }
+
+            # Add query parameters if present
+            if query:
+                log_data["query"] = query
+            if limit:
+                log_data["limit"] = limit
+
             # Log success
             logger.info(
                 "Tool execution completed",
-                extra={
-                    "extra_fields": {
-                        "event_type": "tool_call",
-                        "tool_name": tool_name,
-                        "duration_ms": round(duration_ms, 2),
-                        "result_count": result_count,
-                        "status": "success",
-                    }
-                },
+                extra={"extra_fields": log_data},
             )
 
             return result
@@ -81,19 +96,26 @@ def log_tool_call(func: Callable) -> Callable:
         except Exception as e:
             duration_ms = (time.time() - start_time) * 1000
 
+            # Build log data
+            log_data = {
+                "event_type": "tool_call",
+                "tool_name": tool_name,
+                "duration_ms": round(duration_ms, 2),
+                "status": "error",
+                "error_type": type(e).__name__,
+                "error_message": str(e),
+            }
+
+            # Add query parameters if present
+            if query:
+                log_data["query"] = query
+            if limit:
+                log_data["limit"] = limit
+
             # Log error
             logger.error(
                 f"Tool execution failed: {str(e)}",
-                extra={
-                    "extra_fields": {
-                        "event_type": "tool_call",
-                        "tool_name": tool_name,
-                        "duration_ms": round(duration_ms, 2),
-                        "status": "error",
-                        "error_type": type(e).__name__,
-                        "error_message": str(e),
-                    }
-                },
+                extra={"extra_fields": log_data},
             )
             raise
 
