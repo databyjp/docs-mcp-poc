@@ -43,7 +43,8 @@ for crawled_doc_path in crawled_doc_paths:
                             "product": vdb_name,
                             "chunk": text_chunk.text,
                             "chunk_no": i,
-                            "path": path
+                            "path": path,
+                            "path_hash": generate_uuid5(path)
                         },
                         uuid=generate_uuid5("Chunks", f"{vdb_name}-{path}-chunk-{i}")
                     )
@@ -58,7 +59,8 @@ for crawled_doc_path in crawled_doc_paths:
                 properties={
                     "product": vdb_name,
                     "body": text,
-                    "path": path
+                    "path": path,
+                    "path_hash": generate_uuid5(path)
                 },
                 uuid=generate_uuid5("Documents", f"{vdb_name}-{path}")
             )

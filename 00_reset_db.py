@@ -15,6 +15,7 @@ if not client.collections.exists("Chunks"):
             Property(name="chunk", data_type=DataType.TEXT),
             Property(name="chunk_no", data_type=DataType.INT),
             Property(name="path", data_type=DataType.TEXT, tokenization=Tokenization.FIELD),
+            Property(name="path_hash", data_type=DataType.TEXT, tokenization=Tokenization.FIELD)
         ],
         vector_config=Configure.Vectors.text2vec_cohere(
             model="embed-v4.0",
@@ -29,6 +30,7 @@ if not client.collections.exists("Documents"):
             Property(name="product", data_type=DataType.TEXT, tokenization=Tokenization.FIELD),
             Property(name="body", data_type=DataType.TEXT),
             Property(name="path", data_type=DataType.TEXT, tokenization=Tokenization.FIELD),
+            Property(name="path_hash", data_type=DataType.TEXT, tokenization=Tokenization.FIELD)
         ],
         vector_config=Configure.Vectors.text2vec_cohere(
             model="embed-v4.0",

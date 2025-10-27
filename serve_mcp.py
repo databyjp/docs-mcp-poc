@@ -2,6 +2,7 @@ import argparse
 import asyncio
 import os
 from weaviate.classes.query import Filter
+from weaviate.util import generate_uuid5
 from fastmcp import FastMCP
 from utils import PRODUCTS, connect_to_weaviate
 from logging_utils import log_tool_call, log_resource_access, log_server_start, log_server_ready
@@ -49,6 +50,7 @@ def search_chunks(query: str, limit: int = 5) -> list[dict]:
 
     Returns smaller chunks of text that match the query, useful for finding
     specific code examples or explanations.
+    Use the fetch_document_by_url tool to get the full document.
 
     Args:
         query: The search query or question
@@ -82,7 +84,7 @@ def search_documents(query: str, limit: int = 5) -> list[dict]:
     """Search for complete documentation pages.
 
     Returns the first 500 characters of documents that match the query.
-    Use the doc:// resource URI to get the full content of a specific document.
+    Use the fetch_document_by_url tool to get the full document.
 
     Args:
         query: The search query or question
@@ -117,16 +119,24 @@ def search_documents(query: str, limit: int = 5) -> list[dict]:
 # ============================================================================
 
 
-@log_resource_access
+@mcp.tool()
+@log_tool_call
 def fetch_document_by_url(url: str) -> str:
-    """Helper function to fetch a document by its full URL."""
+    """
+    Helper function to fetch a document by its full URL.
+    Args:
+        url: The complete URL of the documentation page
+    """
     client = connect_to_weaviate()
+
+    if not url.startswith("http://") and not url.startswith("https://"):
+        url = "https://" + url
 
     try:
         documents = client.collections.use("Documents")
 
         response = documents.query.fetch_objects(
-            filters=Filter.by_property("path").equal(url),
+            filters=Filter.by_property("path_hash").equal(generate_uuid5(url)),
             limit=1
         )
 
@@ -170,8 +180,10 @@ def assistant_instructions() -> str:
     return f"""You are a {PRODUCT} documentation expert assistant.
 
 ## Citation Guidelines
-Always cite sources using the format: [Description](URL)
+Always cite sources using the format: [Description](URL; without "http(s)://").
 Use the doc:// resource to fetch full documentation when needed.
+
+Example: doc://https://docs.weaviate.io/weaviate/manage-data/collections
 
 ## Search Strategy
 1. Use search_chunks() for specific code examples or concepts
